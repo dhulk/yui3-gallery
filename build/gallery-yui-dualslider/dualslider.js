@@ -1,14 +1,16 @@
 //Inherit and extend slider to add dual slider
 YUI.add('dualslider', function(Y) {
 
-	var VALUE = 'value', VALUE2 = 'value2', THUMBSFLIPPED = 'false';
+	var VALUE = 'value', VALUE2 = 'value2', THUMBSEPARATION = 'thumbSeparation', THUMBSFLIPPED = 'thumbsFlipped';
 	
 	function DualSlider() {		
 		DualSlider.superclass.constructor.apply(this, arguments);		
 	}
 	
 	Y.DualSlider = Y.extend(DualSlider, Y.Slider, {		
-				
+		renderThumb2: function () {
+			return this.renderThumb();
+		},		
 		/**
 		 * Create the DOM structure for the Slider.
 		 *
@@ -40,7 +42,7 @@ YUI.add('dualslider', function(Y) {
 
 			this.rail.appendChild( this.thumb );
 			
-			this.thumb2 = this.renderThumb();
+			this.thumb2 = this.renderThumb2();
 
 			this.rail.appendChild( this.thumb2 );	
 			
@@ -150,7 +152,7 @@ YUI.add('dualslider', function(Y) {
 			var previous, value;			
 			var railPos, thumbPos, thumb2Pos;
 			var flipped = this.get( THUMBSFLIPPED );
-			var imagePadding = -1;
+			var imagePadding = null;
 			var thumbSize;
 			var offsetInsideThumb = false, offsetInsideThumb2 = false;
 				
@@ -159,46 +161,49 @@ YUI.add('dualslider', function(Y) {
 				case 'x':					
 					railPos = this.rail.getX();
 					thumbPos = this.thumb.getX();
-					thumb2Pos = this.thumb2.getX();
-					thumbSize = parseInt(this.thumb.getStyle('width'));					
+					thumb2Pos = this.thumb2.getX();					
 					break;
 				case 'y':
 					railPos = this.rail.getY();
 					thumbPos = this.thumb.getY();
-					thumb2Pos = this.thumb2.getY();
-					thumbSize = parseInt(this.thumb.getStyle('height'));								
+					thumb2Pos = this.thumb2.getY();					
 					break;
 			}
+			if (this.get( THUMBSEPARATION ) >= 0)
+				thumbSize = this.get( THUMBSEPARATION );
+			else
+				thumbSize = 0;
+				
 			//Determine what thumb was being modified.  Or if they are starting to overlap
-			if (railPos + e.offset >= thumbPos - thumbSize && railPos + e.offset < thumbPos + thumbSize)
+			if (railPos + e.offset >= thumbPos - thumbSize && railPos + e.offset <= thumbPos + thumbSize)
 				offsetInsideThumb = true;
-			if (railPos + e.offset >= thumb2Pos - thumbSize && railPos + e.offset < thumb2Pos + thumbSize)
+			if (railPos + e.offset >= thumb2Pos - thumbSize && railPos + e.offset <= thumb2Pos + thumbSize)
 				offsetInsideThumb2 = true;
 			
 			//Check overlap an prepare padding to reset the thumbs position
-			if (!flipped && thumbPos > thumb2Pos - thumbSize) 
+			if (!flipped && thumbPos >= thumb2Pos - thumbSize) 
 					imagePadding = -thumbSize;														
-			else if (flipped && thumbPos < thumb2Pos + thumbSize)
+			else if (flipped && thumbPos <= thumb2Pos + thumbSize)
 					imagePadding = thumbSize;
-									
-			if (imagePadding == -1 && offsetInsideThumb && !offsetInsideThumb2) {
+					
+			if (imagePadding == null && offsetInsideThumb) {
 				previous = this.getValue();
 				value    = this._offsetToValue( e.offset );
 				
-				if ( previous !== value && value != this.getValue2() )
+				if ( previous !== value)
 					this.set( VALUE, value, { positioned: true } );		
 			}
-			else if (imagePadding == -1 && offsetInsideThumb2 && !offsetInsideThumb){
+			else if (imagePadding == null && offsetInsideThumb2){
 				previous = this.getValue2();
 				value    = this._offsetToValue( e.offset );
 				
-				if (previous !== value && value != this.getValue())
+				if (previous !== value)
 					this.set( VALUE2, value, { positioned: true } );	
 			}
 			else if (e.ddEvent) {			
 				switch (e.ddEvent.target) {
 					case this._dd:						
-						if (imagePadding != -1) {							
+						if (imagePadding !== null) {							
 							switch (this.axis) {
 								case 'x':						
 									this.thumb.setX(thumb2Pos + imagePadding);
@@ -211,7 +216,7 @@ YUI.add('dualslider', function(Y) {
 						}		
 						break;
 					case this._dd2:
-						if (imagePadding != -1) {
+						if (imagePadding !== null) {
 							//Padding logic is reversed for the second thumb
 							imagePadding *= -1
 							switch (this.axis) {
@@ -253,11 +258,24 @@ YUI.add('dualslider', function(Y) {
         setValue2: function ( val ) {			
             return this.set( VALUE2, val);
         },
-		
-		_setThumbsFlipped: function( val ) {
-			return this.set( THUMBSFLIPPED, val);
-		},
-		
+		_setThumbSeparation: function ( val ) {			
+			if (val <= 0) return 0;
+			
+			//Translate to value separation
+			var rangeSize = this.get('max') - this.get('min');
+			var sepFactor = val / rangeSize;			
+			if (sepFactor < 0) sepFactor *= -1;
+			if (sepFactor > this._factor)
+				val = parseInt(this.get('length')) * sepFactor;
+			else {
+				if (this.get('tickCount'))
+					val = parseInt(this.get('length')) / this.get('tickCount');
+				else
+					val *= parseInt(this.get('length')) / rangeSize;
+			}
+			
+			return val;
+		},			
 		/**
 		 * Synchronizes the DOM state with the attribute settings.
 		 *
@@ -397,8 +415,20 @@ YUI.add('dualslider', function(Y) {
 				
 			if (distToThumb < distToThumb2)
 				return this._dd;
-			else
+			else if (distToThumb2 < distToThumb)
 				return this._dd2;
+			else if (this.get( THUMBSFLIPPED )) {
+				if (mousePos < thumb2Pos)
+					return this._dd2;					
+				else
+					return this._dd;					
+			}
+			else {
+				if (mousePos < thumbPos)
+					return this._dd;
+				else
+					return this._dd2;
+			}
         }
 	}, {
 
@@ -441,15 +471,21 @@ YUI.add('dualslider', function(Y) {
             setter: '_setNewValue'
         },
 		/**
+		* Alows the user to specify a custom pixel separation between the sliders
+		*/
+		thumbSeparation: {
+			value : 0,
+			setter: '_setThumbSeparation'
+		},
+		/**
 		* Used to detect when the value of slider2 > slider1
 		*/
 		thumbsFlipped : {
-			value : 0,
-			setter:	'_setThumbsFlipped'
+			value : 0		
 		}		
 	}
     });
-
+	
 }, '0.0.0', {
-	requires:['widget', 'substitute', 'dd-constrain'], use:['slider-base', 'slider-value-range', 'clickable-rail', 'range-slider']
+	requires:['widget', 'substitute', 'dd-constrain', 'slider']
 });
