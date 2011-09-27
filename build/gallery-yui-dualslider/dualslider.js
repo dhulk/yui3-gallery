@@ -487,5 +487,5 @@ YUI.add('dualslider', function(Y) {
     });
 	
 }, '0.0.0', {
-	requires:['widget', 'substitute', 'dd-constrain', 'slider']
+	requires:['slider']
 });
