@@ -184,7 +184,7 @@ YUI.add('gallery-yui-dualslider', function(Y) {
 					thumbSep = (railLength - thumbSize) * sepFactor;
 				else {
 					if (this.get('tickCount'))
-						thumbSep *= (railLength - thumbSize) / this.get('tickCount');
+						thumbSep = (railLength - thumbSize) / this.get('tickCount');
 					else
 						thumbSep *= (railLength - thumbSize) / rangeSize;
 				}				
