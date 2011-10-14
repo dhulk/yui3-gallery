@@ -9,7 +9,7 @@ YUI.add('gallery-yui-dualslider', function(Y) {
 		DualSlider.superclass.constructor.apply(this, arguments);		
 	}
 	
-	Y.DualSlider = Y.extend(DualSlider, Y.rdSlider, {		
+	Y.DualSlider = Y.extend(DualSlider, Y.Slider, {		
 		renderThumb2: function () {
 			return this.renderThumb();
 		},		
