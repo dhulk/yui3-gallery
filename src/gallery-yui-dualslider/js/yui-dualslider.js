@@ -1,5 +1,5 @@
-//Inherit and extend slider to add dual slider
-YUI.add('gallery-yui-dualslider', function(Y) {
+
+	//Inherit and extend slider to add dual slider
 
 	var VALUE = 'value', VALUE2 = 'value2', THUMBSEPARATION = 'thumbSeparation', THUMBSFLIPPED = 'thumbsFlipped';
 	
@@ -489,8 +489,5 @@ YUI.add('gallery-yui-dualslider', function(Y) {
 			value : 0		
 		}		
 	}
-    });
+	});
 	
-}, '0.0.0', {
-	requires:['slider']
-});
