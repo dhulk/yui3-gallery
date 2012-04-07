@@ -53,6 +53,151 @@
 			contentBox.addClass( this.getClassName( this.axis ) );
 			
 		},
+
+        /**
+         * increments Slider value by a minor increment
+         *
+         * @method _incrMinor
+         * @protected
+         */
+        _incrMinor : function(thumbToAdjust){
+            this.set(thumbToAdjust, (this.get(thumbToAdjust) + this.get('minorStep')));
+        },
+
+        /**
+         * decrements Slider value by a minor increment
+         *
+         * @method _decrMinor
+         * @protected
+         */
+        _decrMinor : function(thumbToAdjust){
+            this.set(thumbToAdjust, (this.get(thumbToAdjust) - this.get('minorStep')));
+        },
+
+        /**
+         * increments Slider value by a major increment
+         *
+         * @method _incrMajor
+         * @protected
+         */
+        _incrMajor : function(thumbToAdjust){
+            this.set(thumbToAdjust, (this.get(thumbToAdjust) + this.get('majorStep')));
+        },
+
+        /**
+         * decrements Slider value by a major increment
+         *
+         * @method _decrMajor
+         * @protected
+         */
+        _decrMajor : function(thumbToAdjust){
+            this.set(thumbToAdjust, (this.get(thumbToAdjust) - this.get('majorStep')));
+        },
+
+        /**
+         * sets the Slider value to the min value.
+         *
+         * @method _setToMin
+         * @protected
+         */
+        _setToMin : function(thumbToAdjust){
+            this.set(thumbToAdjust, this.get('min'));
+        },
+
+        /**
+         * sets the Slider value to the max value.
+         *
+         * @method _setToMax
+         * @protected
+         */
+        _setToMax : function(thumbToAdjust){
+            this.set(thumbToAdjust, this.get('max'));
+        },
+
+        /**
+         * sets the Slider's value in response to key events.
+         * Left and right keys are in a separate method
+         * in case an implementation wants to increment values
+         * but needs left and right arrow keys for other purposes.
+         *
+         * @method _onDirectionKey
+         * @param e {Event} the key event
+         * @protected
+         */
+        _onDirectionKey : function(e) {
+            e.preventDefault();
+            var targetNode = e.target;
+            var thumbToAdjust = (targetNode === this.thumb ? "value" : "value2");
+            if(this.get('disabled') === false){
+                switch (e.charCode) {
+                    case 38: // up
+                        this._incrMinor(thumbToAdjust);
+                        break;
+                    case 40: // down
+                        this._decrMinor(thumbToAdjust);
+                        break;
+                    case 36: // home
+                        this._setToMin(thumbToAdjust);
+                        break;
+                    case 35: // end
+                        this._setToMax(thumbToAdjust);
+                        break;
+                    case 33: // page up
+                        this._incrMajor(thumbToAdjust);
+                        break;
+                    case 34: // page down
+                        this._decrMajor(thumbToAdjust);
+                        break;
+                }
+            }
+        },
+
+        /**
+         * sets the Slider's value in response to left or right key events
+         *
+         * @method _onLeftRightKey
+         * @param e {Event} the key event
+         * @protected
+         */
+        _onLeftRightKey : function(e) {
+            e.preventDefault();
+            var targetNode = e.target;
+            var thumbToAdjust = (targetNode === this.thumb ? "value" : "value2");
+            if(this.get('disabled') === false){
+                switch (e.charCode) {
+                    case 37: // left
+                        this._decrMinor(thumbToAdjust);
+                        break;
+                    case 39: // right
+                        this._incrMinor(thumbToAdjust);
+                        break;
+                }
+            }
+        },
+
+        /**
+         * sets the Slider's value in response to left or right key events when a meta (mac command/apple) key is also pressed
+         *
+         * @method _onLeftRightKeyMeta
+         * @param e {Event} the key event
+         * @protected
+         */
+        _onLeftRightKeyMeta : function(e) {
+            e.preventDefault();
+            var targetNode = e.target;
+            var thumbToAdjust = (targetNode === this.thumb ? "value" : "value2");
+            if(this.get('disabled') === false){
+                switch (e.charCode) {
+                    case 37: // left + meta
+                        this._setToMin(thumbToAdjust);
+                        break;
+                    case 39: // right + meta
+                        this._setToMax(thumbToAdjust);
+                        break;
+                }
+            }
+        },
+
 		 /**
 		 * Makes the thumb draggable and constrains it to the rail.
 		 *
