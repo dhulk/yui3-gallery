@@ -1,4 +1,3 @@
-
 	//Inherit and extend slider to add dual slider
 
 	var VALUE = 'value', VALUE2 = 'value2', THUMBSEPARATION = 'thumbSeparation', THUMBSFLIPPED = 'thumbsFlipped';
@@ -322,8 +321,7 @@
 					railLength = parseInt(this.get('length')),
 					thumbSize = parseInt(this.thumb.getStyle( this._key.dim ));
 						
-				var sepFactor = thumbSep / rangeSize;			
-				if (sepFactor < 0) sepFactor *= -1;
+				var sepFactor = Math.abs(thumbSep / rangeSize);
 				
 				if (sepFactor > this._factor)
 					thumbSep = (railLength - thumbSize) * sepFactor;
@@ -381,7 +379,7 @@
 					case this._dd2:
 						if (imagePadding !== null) {
 							//Padding logic is reversed for the second thumb
-							imagePadding *= -1
+							imagePadding = Math.abs(imagePadding);
 							switch (this.axis) {
 								case 'x':						
 									this.thumb2.setX(thumbPos + imagePadding);
@@ -555,13 +553,7 @@
 					thumb2Pos = this.thumb2.getY();						
 					break;
 			}
-			var distToThumb = mousePos - thumbPos , distToThumb2 = mousePos - thumb2Pos;
-			
-			//Change negative values to positive
-			if (distToThumb < 0)
-				distToThumb *= -1;
-			if (distToThumb2 < 0)
-				distToThumb2 *= -1;
+			var distToThumb = Math.abs(mousePos - thumbPos) , distToThumb2 = Math.abs(mousePos - thumb2Pos);
 				
 			if (distToThumb < distToThumb2)
 				return this._dd;
